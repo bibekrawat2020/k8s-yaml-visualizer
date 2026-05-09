@@ -1,16 +1,240 @@
-# React + Vite
+# K8s YAML Visualizer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A browser-based tool that helps developers and DevOps engineers understand Kubernetes architectures visually.
 
-Currently, two official plugins are available:
+Upload a Kubernetes YAML manifest and instantly visualize resource relationships, detect security risks, and identify reliability issues all without connecting to a real cluster.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+![K8s YAML Visualizer](./screenshot.png)
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Features
 
-## Expanding the ESLint configuration
+- **Architecture Visualization** — Renders Kubernetes resources as an interactive graph with color-coded nodes
+- **Relationship Detection** — Automatically detects connections between Deployments, Services, and Ingress resources
+- **Security Scanner** — Detects 13 common misconfigurations like privileged containers, hardcoded secrets, and missing security contexts
+- **Reliability Scanner** — Warns about single replicas, missing health probes, and absent resource limits
+- **Drag & Drop Upload** — Supports single and multi-document YAML files separated by `---`
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## Live Demo
+
+🔗 [Coming soon](#)
+
+---
+
+## Supported Resources
+
+| Resource | Node Color |
+|---|---|
+| Deployment | Blue |
+| StatefulSet | Purple |
+| DaemonSet | Cyan |
+| Service | Green |
+| Ingress | Amber |
+| ConfigMap | Gray |
+| Secret | Red |
+| HPA | Pink |
+| Job / CronJob | Lime |
+| ArgoCD Application | Orange |
+
+---
+
+## Security Checks
+
+| Check | Severity |
+|---|---|
+| Latest or untagged image tag | High |
+| Privileged container | High |
+| Hardcoded secret in environment variable | High |
+| hostNetwork enabled | High |
+| hostPID enabled | High |
+| Missing ingress TLS | High |
+| Missing securityContext | Medium |
+| Missing resource limits | Medium |
+| runAsNonRoot not set | Medium |
+| readOnlyRootFilesystem not set | Medium |
+| allowPrivilegeEscalation not disabled | Medium |
+| NodePort exposure | Medium |
+| Wildcard ingress host | Medium |
+
+---
+
+## Reliability Checks
+
+| Check | Severity |
+|---|---|
+| Single replica deployment | Medium |
+| Missing livenessProbe | Low |
+| Missing readinessProbe | Low |
+| Missing resource requests | Low |
+
+---
+
+## Tech Stack
+
+- **React** — UI framework
+- **Vite** — Build tooling
+- **React Flow** — Graph visualization
+- **js-yaml** — YAML parsing
+- **Zustand** — State management
+- **Tailwind CSS** — Styling
+
+---
+
+## Getting Started
+
+### Prerequisites
+- Node.js v22+
+- npm
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/k8s-yaml-visualizer.git
+cd k8s-yaml-visualizer
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
+```
+
+Open `http://localhost:5173` in your browser.
+
+---
+
+## Usage
+
+1. Click the upload area or drag and drop a `.yaml` or `.yml` file
+2. The graph renders automatically with your resources as nodes
+3. Edges show detected relationships between resources
+4. The sidebar lists all detected issues by severity
+
+---
+
+## Example YAML
+
+Don't have a Kubernetes manifest handy? Use this to test:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-app-ingress
+  namespace: default
+spec:
+  rules:
+    - host: myapp.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: my-app-service
+                port:
+                  number: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app-service
+  namespace: default
+spec:
+  type: NodePort
+  selector:
+    app: my-app
+  ports:
+    - port: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: my-app
+          image: nginx:latest
+          env:
+            - name: DB_PASSWORD
+              value: "supersecret123"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-app-config
+  namespace: default
+data:
+  APP_ENV: production
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-app-secret
+  namespace: default
+data:
+  DB_PASSWORD: c2VjcmV0
+```
+
+This example intentionally triggers multiple High and Medium issues to demonstrate the scanner.
+
+---
+
+## How the Scanner Works
+
+Issues are not hardcoded. Every check runs dynamically against your uploaded YAML:
+
+1. YAML is parsed into JavaScript objects
+2. Resources are normalized to extract kind, name, labels and spec
+3. Security and reliability rules run automatically against each resource
+4. Issues are rendered in the sidebar grouped by severity
+
+The rules define what to look for, but which resources trigger them depends entirely on your manifest.
+
+---
+
+## Roadmap
+
+- [x] YAML parsing and normalization
+- [x] Graph visualization
+- [x] Relationship detection
+- [x] Security scanning (13 checks)
+- [x] Reliability scanning (4 checks)
+- [ ] Live YAML editor with instant graph updates
+- [ ] Export diagram as PNG or SVG
+- [ ] Namespace grouping on graph
+- [ ] AI-powered fix recommendations
+- [ ] kubeconfig cluster import
+
+---
+
+## What I Learned
+
+Building this project gave me hands-on experience with:
+
+- How Kubernetes resources relate to each other through labels and selectors
+- Common Kubernetes security misconfigurations and why they matter in production
+- Reliability best practices like probe configuration, replica counts and resource management
+- How static analysis tools like kube-score and kube-linter work under the hood
+- Graph-based UI development with React Flow
+- State management patterns with Zustand in a real feature context
+
+---
+
+## License
+
+MIT
