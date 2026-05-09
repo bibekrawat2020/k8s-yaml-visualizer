@@ -24,6 +24,77 @@ Upload a Kubernetes YAML manifest and instantly visualize resource relationships
 
 ---
 
+## Architecture
+
+```mermaid
+flowchart TD
+    User(["👤 User"])
+
+    subgraph UI["User Interface"]
+        UP["UploadPanel\nsrc/components/UploadPanel"]
+        GC["GraphCanvas\nsrc/components/GraphCanvas"]
+        IP["IssuePanel\nsrc/components/IssuePanel"]
+    end
+
+    subgraph Parsers["Parsers"]
+        YP["yamlParser.js\nParses raw YAML text\nHandles multi-document ---"]
+        NR["normalizeResources()\nExtracts kind, name,\nnamespace, labels, spec"]
+    end
+
+    subgraph Store["Zustand Store\nsrc/store/store.js"]
+        RS[("resources[ ]")]
+        IS[("issues[ ]")]
+        ER[("error")]
+    end
+
+    subgraph Graph["Graph Engine"]
+        NF["nodeFactory.js\nBuilds color-coded nodes\nwith positions"]
+        GB["graphBuilder.js\nDetects relationships\nand builds edges"]
+    end
+
+    subgraph Validators["Validators"]
+        SC["securityRules.js\n13 security checks"]
+        RC["reliabilityRules.js\n4 reliability checks"]
+    end
+
+    User -->|"drag & drop .yaml"| UP
+    UP -->|"raw YAML text"| YP
+    YP -->|"parsed documents"| NR
+    NR -->|"setResources()"| RS
+
+    RS -->|"triggers useEffect"| SC
+    RS -->|"triggers useEffect"| RC
+    SC -->|"security issues"| IS
+    RC -->|"reliability issues"| IS
+
+    RS -->|"resources"| NF
+    RS -->|"resources"| GB
+    NF -->|"nodes"| GC
+    GB -->|"edges"| GC
+
+    IS -->|"issues"| IP
+
+    style UI fill:#1e3a5f,stroke:#3b82f6,color:#fff
+    style Parsers fill:#1a3a2a,stroke:#10b981,color:#fff
+    style Store fill:#3a1a3a,stroke:#8b5cf6,color:#fff
+    style Graph fill:#3a2a1a,stroke:#f59e0b,color:#fff
+    style Validators fill:#3a1a1a,stroke:#ef4444,color:#fff
+```
+
+### How it works
+
+When a user uploads a YAML file, the data flows through four independent layers:
+
+**1. Parser layer** — `yamlParser.js` converts raw YAML text into JavaScript objects and handles multi-document files separated by `---`. `normalizeResources()` then extracts only the fields we care about — kind, name, namespace, labels and spec.
+
+**2. Store layer** — Normalized resources are saved into a central Zustand store. This acts as the single source of truth that all other parts of the app read from.
+
+**3. Graph layer** — `nodeFactory.js` builds a color-coded node for each resource. `graphBuilder.js` analyzes labels and selectors to detect implicit relationships and builds the connecting edges. Both feed into the React Flow canvas.
+
+**4. Validator layer** — Security and reliability rules run automatically whenever resources change. Each rule inspects the resource spec and pushes issues into the store. The IssuePanel reads and displays them grouped by severity.
+
+---
+
 ## Supported Resources
 
 | Resource | Node Color |
