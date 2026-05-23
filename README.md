@@ -10,11 +10,12 @@ Upload a Kubernetes YAML manifest and instantly visualize resource relationships
 
 ## Features
 
-- **Architecture Visualization** — Renders Kubernetes resources as an interactive graph with color-coded nodes
-- **Relationship Detection** — Automatically detects connections between Deployments, Services, and Ingress resources
+- **Split-Screen Live Editor** — Edit YAML configurations side-by-side with the graph canvas, with live scroll-synchronized line numbers and syntax validation.
+- **Architecture Visualization** — Renders Kubernetes resources as an interactive graph with custom glassmorphic cards, type-specific icons, and severity-sorted issue warning bubbles.
+- **Extended Relationship Detection** — Automatically maps connections between Ingresses, Services, Deployments/StatefulSets/DaemonSets, ConfigMaps, Secrets, PVCs, and HPAs.
 - **Security Scanner** — Detects 13 common misconfigurations like privileged containers, hardcoded secrets, and missing security contexts
 - **Reliability Scanner** — Warns about single replicas, missing health probes, and absent resource limits
-- **Drag & Drop Upload** — Supports single and multi-document YAML files separated by `---`
+- **Drag & Drop Import** — Import single or multi-document YAML files directly into the editor.
 
 ---
 
@@ -285,7 +286,7 @@ The rules define what to look for, but which resources trigger them depends enti
 - [x] Relationship detection
 - [x] Security scanning (13 checks)
 - [x] Reliability scanning (4 checks)
-- [ ] Live YAML editor with instant graph updates
+- [x] Live YAML editor with instant graph updates
 - [ ] Export diagram as PNG or SVG
 - [ ] Namespace grouping on graph
 - [ ] AI-powered fix recommendations
