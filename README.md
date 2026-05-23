@@ -4,8 +4,8 @@ A browser-based tool that helps developers and DevOps engineers understand Kuber
 
 Upload a Kubernetes YAML manifest and instantly visualize resource relationships, detect security risks, and identify reliability issues all without connecting to a real cluster.
 
-![K8s YAML Visualizer](./screenshot.png)
-
+![K8s YAML Visualizer](./screenshot1.png)
+![K8s YAML Visualizer](./screenshot2.png)
 ---
 
 ## Features
