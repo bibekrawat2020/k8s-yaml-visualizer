@@ -144,7 +144,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden select-none">
+    <div className="h-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden select-none">
       <Header />
 
       {/* Main container */}
