@@ -36,7 +36,15 @@ const getMiniMapNodeColor = (node) => {
 }
 
 function GraphCanvas() {
-  const { nodes, edges, onNodesChange, onEdgesChange } = useStore()
+  const { nodes, edges, onNodesChange, onEdgesChange, setSelectedNodeId } = useStore()
+
+  const onNodeClick = (event, node) => {
+    setSelectedNodeId(node.id)
+  }
+
+  const onPaneClick = () => {
+    setSelectedNodeId(null)
+  }
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
@@ -45,6 +53,8 @@ function GraphCanvas() {
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onNodeClick={onNodeClick}
+        onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
         fitView
       >

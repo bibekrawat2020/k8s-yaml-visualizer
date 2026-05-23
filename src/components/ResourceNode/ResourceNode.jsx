@@ -105,6 +105,9 @@ const fallbackConfig = {
 export default function ResourceNode({ data }) {
   const { kind, name, namespace } = data
   const issues = useStore((state) => state.issues)
+  const selectedNodeId = useStore((state) => state.selectedNodeId)
+
+  const isSelected = selectedNodeId === `${kind}-${name}`
 
   // Filter issues targeting this specific resource
   const resourceIssues = issues.filter(
@@ -118,7 +121,7 @@ export default function ResourceNode({ data }) {
   const config = KIND_CONFIGS[kind] || fallbackConfig
 
   return (
-    <div className={`relative px-4 py-3 rounded-xl border bg-gradient-to-br ${config.bg} ${config.border} backdrop-blur-md shadow-2xl transition-all duration-300 w-[180px] text-left group`}>
+    <div className={`relative px-4 py-3 rounded-xl border bg-gradient-to-br ${config.bg} ${isSelected ? 'border-blue-400 ring-2 ring-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.6)]' : config.border} backdrop-blur-md shadow-2xl transition-all duration-300 w-[180px] text-left group`}>
       <Handle
         type="target"
         position={Position.Top}

@@ -5,6 +5,7 @@ import UploadPanel from './components/UploadPanel/UploadPanel'
 import GraphCanvas from './components/GraphCanvas/GraphCanvas'
 import IssuePanel from './components/IssuePanel/IssuePanel'
 import useStore from './store/store'
+import NodeInspector from './components/NodeInspector/NodeInspector'
 import { runSecurityChecks } from './validators/securityRules'
 import { runReliabilityChecks } from './validators/reliabilityRules'
 
@@ -121,7 +122,7 @@ spec:
 `
 
 function App() {
-  const { yamlText, setYamlText, resources, setIssues, issues } = useStore()
+  const { yamlText, setYamlText, resources, setIssues, issues, selectedNodeId } = useStore()
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   // Run scanners automatically whenever resources change
@@ -134,6 +135,13 @@ function App() {
     const reliabilityIssues = runReliabilityChecks(resources)
     setIssues([...securityIssues, ...reliabilityIssues])
   }, [resources])
+
+  // Automatically force-open the scan sidebar when a node is selected
+  useEffect(() => {
+    if (selectedNodeId) {
+      setIsSidebarOpen(true)
+    }
+  }, [selectedNodeId])
 
   const handleLoadSample = () => {
     setYamlText(SAMPLE_YAML)
@@ -213,51 +221,57 @@ function App() {
             {/* Column 3: Collapsible Right Sidebar */}
             {isSidebarOpen && (
               <aside className="w-80 bg-slate-900 border-l border-slate-800 flex flex-col overflow-hidden h-full relative shadow-2xl">
-                {/* Close handle */}
-                <div className="p-3 border-b border-slate-800 flex items-center justify-between bg-slate-950/20 select-none">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                    Scan Report
-                  </h3>
-                  <button
-                    onClick={() => setIsSidebarOpen(false)}
-                    className="text-slate-500 hover:text-slate-200 text-xs font-semibold px-2 py-0.5 rounded hover:bg-slate-800 cursor-pointer"
-                    title="Hide sidebar"
-                  >
-                    Hide
-                  </button>
-                </div>
-
-                <div className="flex-1 overflow-y-auto divide-y divide-slate-800">
-                  {/* Resources list summary */}
-                  {resources.length > 0 && (
-                    <div className="p-4 bg-slate-950/10">
-                      <h4 className="text-xs font-semibold text-slate-400 mb-2">
-                        Resources ({resources.length})
-                      </h4>
-                      <ul className="space-y-1.5">
-                        {resources.map((r, i) => (
-                          <li
-                            key={i}
-                            className="text-[11px] text-slate-300 bg-slate-950/40 border border-slate-800/60 rounded px-2.5 py-1.5 flex items-center justify-between font-mono"
-                          >
-                            <span className="truncate pr-2" title={r.name}>{r.name}</span>
-                            <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-slate-800/80 text-blue-400 font-sans font-bold shrink-0">
-                              {r.kind}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
+                {selectedNodeId ? (
+                  <NodeInspector />
+                ) : (
+                  <>
+                    {/* Close handle */}
+                    <div className="p-3 border-b border-slate-800 flex items-center justify-between bg-slate-950/20 select-none">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Scan Report
+                      </h3>
+                      <button
+                        onClick={() => setIsSidebarOpen(false)}
+                        className="text-slate-500 hover:text-slate-200 text-xs font-semibold px-2 py-0.5 rounded hover:bg-slate-800 cursor-pointer"
+                        title="Hide sidebar"
+                      >
+                        Hide
+                      </button>
                     </div>
-                  )}
 
-                  {/* Issues pane */}
-                  <div className="flex flex-col">
-                    <h4 className="text-xs font-semibold text-slate-400 px-4 pt-4 pb-2">
-                      Detected Issues ({issues.length})
-                    </h4>
-                    <IssuePanel />
-                  </div>
-                </div>
+                    <div className="flex-1 overflow-y-auto divide-y divide-slate-800">
+                      {/* Resources list summary */}
+                      {resources.length > 0 && (
+                        <div className="p-4 bg-slate-950/10">
+                          <h4 className="text-xs font-semibold text-slate-400 mb-2">
+                            Resources ({resources.length})
+                          </h4>
+                          <ul className="space-y-1.5">
+                            {resources.map((r, i) => (
+                              <li
+                                key={i}
+                                className="text-[11px] text-slate-300 bg-slate-950/40 border border-slate-800/60 rounded px-2.5 py-1.5 flex items-center justify-between font-mono"
+                              >
+                                <span className="truncate pr-2" title={r.name}>{r.name}</span>
+                                <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-slate-800/80 text-blue-400 font-sans font-bold shrink-0">
+                                  {r.kind}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Issues pane */}
+                      <div className="flex flex-col">
+                        <h4 className="text-xs font-semibold text-slate-400 px-4 pt-4 pb-2">
+                          Detected Issues ({issues.length})
+                        </h4>
+                        <IssuePanel />
+                      </div>
+                    </div>
+                  </>
+                )}
               </aside>
             )}
           </>

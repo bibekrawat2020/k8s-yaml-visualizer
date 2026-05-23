@@ -16,8 +16,12 @@ const useStore = create((set) => ({
   error: null,
   // Security and reliability issues found
   issues: [],
+  // Active selected node ID
+  selectedNodeId: null,
 
   // Actions
+  setSelectedNodeId: (selectedNodeId) => set({ selectedNodeId }),
+
   setYamlText: (yamlText) => {
     set({ yamlText })
     const { resources, error } = parseYAML(yamlText)
@@ -30,6 +34,7 @@ const useStore = create((set) => ({
         resources: normalized,
         nodes: buildNodes(normalized),
         edges: buildEdges(normalized),
+        selectedNodeId: null, // Clear selection when new YAML is loaded
       })
     }
   },
@@ -58,8 +63,9 @@ const useStore = create((set) => ({
 
   setError: (error) => set({ error }),
   setIssues: (issues) => set({ issues }),
-  reset: () => set({ resources: [], nodes: [], edges: [], error: null, issues: [], yamlText: '' }),
+  reset: () => set({ resources: [], nodes: [], edges: [], error: null, issues: [], yamlText: '', selectedNodeId: null }),
 }))
 
 export default useStore
+
 
