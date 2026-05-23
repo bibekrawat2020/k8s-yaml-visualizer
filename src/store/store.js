@@ -2,8 +2,11 @@ import { create } from 'zustand'
 import { applyNodeChanges, applyEdgeChanges } from 'reactflow'
 import { buildNodes } from '../graph/nodeFactory'
 import { buildEdges } from '../graph/graphBuilder'
+import { parseYAML, normalizeResources } from '../parsers/yamlParser'
 
 const useStore = create((set) => ({
+  // The raw YAML text state
+  yamlText: '',
   // The raw parsed resources from the YAML file
   resources: [],
   // React Flow state for nodes and edges
@@ -15,6 +18,22 @@ const useStore = create((set) => ({
   issues: [],
 
   // Actions
+  setYamlText: (yamlText) => {
+    set({ yamlText })
+    const { resources, error } = parseYAML(yamlText)
+    if (error) {
+      set({ error })
+    } else {
+      const normalized = normalizeResources(resources)
+      set({
+        error: null,
+        resources: normalized,
+        nodes: buildNodes(normalized),
+        edges: buildEdges(normalized),
+      })
+    }
+  },
+
   setResources: (resources) => {
     set({
       resources,
@@ -39,7 +58,8 @@ const useStore = create((set) => ({
 
   setError: (error) => set({ error }),
   setIssues: (issues) => set({ issues }),
-  reset: () => set({ resources: [], nodes: [], edges: [], error: null, issues: [] }),
+  reset: () => set({ resources: [], nodes: [], edges: [], error: null, issues: [], yamlText: '' }),
 }))
 
-export default useStore
+export default useStore
+

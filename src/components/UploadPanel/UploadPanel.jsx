@@ -1,10 +1,9 @@
 import { useRef } from "react";
-import { parseYAML, normalizeResources } from "../../parsers/yamlParser";
 import useStore from "../../store/store";
 
 function UploadPanel() {
   const fileInputRef = useRef(null);
-  const { setResources, setError, reset } = useStore();
+  const { setYamlText, setError } = useStore();
 
   function handleFile(file) {
     // Make sure it's a YAML file
@@ -17,16 +16,7 @@ function UploadPanel() {
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target.result;
-      const { resources, error } = parseYAML(text);
-
-      if (error) {
-        setError(error);
-        return;
-      }
-
-      const normalized = normalizeResources(resources);
-      reset();
-      setResources(normalized);
+      setYamlText(text);
     };
     reader.readAsText(file);
   }
