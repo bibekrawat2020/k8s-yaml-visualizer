@@ -1,43 +1,71 @@
-// This file decides the position and style of each node on the graph
+// This file decides the position and layout of each node on the graph
 
-const KIND_COLORS = {
-  Deployment: '#3b82f6',    // blue
-  StatefulSet: '#8b5cf6',   // purple
-  DaemonSet: '#06b6d4',     // cyan
-  Service: '#10b981',       // green
-  Ingress: '#f59e0b',       // amber
-  ConfigMap: '#6b7280',     // gray
-  Secret: '#ef4444',        // red
-  PVC: '#f97316',           // orange
-  Namespace: '#14b8a6',     // teal
-  HPA: '#ec4899',           // pink
-  Job: '#84cc16',           // lime
-  CronJob: '#84cc16',       // lime
+const KIND_LAYERS = {
+  Namespace: 0,
+  Ingress: 0,
+  Service: 1,
+  Deployment: 2,
+  StatefulSet: 2,
+  DaemonSet: 2,
+  Job: 2,
+  CronJob: 2,
+  // Default layer for ConfigMap, Secret, PVC, HPA, etc., is 3.
 }
 
 export function buildNodes(resources) {
-  return resources.map((resource, index) => ({
+  // Initialize the node structures
+  const nodes = resources.map((resource) => ({
     id: `${resource.kind}-${resource.name}`,
-    type: 'default',
-    position: {
-      // Arrange nodes in a grid layout automatically
-      x: (index % 4) * 220 + 50,
-      y: Math.floor(index / 4) * 150 + 50,
-    },
+    type: 'resourceNode',
     data: {
-      label: `${resource.kind}\n${resource.name}`,
+      resource,
+      kind: resource.kind,
+      name: resource.name,
+      namespace: resource.namespace,
+      labels: resource.labels || {},
     },
-    style: {
-      background: KIND_COLORS[resource.kind] || '#374151',
-      color: '#ffffff',
-      border: 'none',
-      borderRadius: '8px',
-      padding: '10px 16px',
-      fontSize: '12px',
-      fontWeight: '600',
-      minWidth: '160px',
-      textAlign: 'center',
-      whiteSpace: 'pre-line',
-    },
+    position: { x: 0, y: 0 } // Will be calculated below
   }))
-}
+
+  // Group nodes by their semantic layer
+  const nodesByLayer = [[], [], [], []]
+  nodes.forEach((node) => {
+    const layer = KIND_LAYERS[node.data.kind] !== undefined ? KIND_LAYERS[node.data.kind] : 3
+    nodesByLayer[layer].push(node)
+  })
+
+  // Calculate layout coordinates dynamically with row wrapping (max 4 per row)
+  let currentY = 50
+  const LAYER_SPACING = 200
+  const ROW_SPACING = 140
+  const NODE_WIDTH_SPACING = 240
+  const CENTER_X = 400
+
+  for (let layerIdx = 0; layerIdx < 4; layerIdx++) {
+    const layerNodes = nodesByLayer[layerIdx]
+    if (layerNodes.length === 0) continue
+
+    const rowsCount = Math.ceil(layerNodes.length / 4)
+
+    layerNodes.forEach((node, idx) => {
+      const rowIdx = Math.floor(idx / 4)
+      const colIdx = idx % 4
+      
+      // Determine how many items are in this specific row
+      const itemsInRow = Math.min(4, layerNodes.length - rowIdx * 4)
+      
+      // Center-align the items within the row
+      const startX = CENTER_X - ((itemsInRow - 1) * NODE_WIDTH_SPACING) / 2
+      
+      node.position = {
+        x: startX + colIdx * NODE_WIDTH_SPACING,
+        y: currentY + rowIdx * ROW_SPACING,
+      }
+    })
+
+    // Advance Y coordinate for the next layer, accounting for multiple rows in this layer
+    currentY += rowsCount * ROW_SPACING + LAYER_SPACING - ROW_SPACING
+  }
+
+  return nodes
+}

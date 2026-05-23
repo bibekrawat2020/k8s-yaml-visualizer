@@ -1,3 +1,5 @@
+const SENSITIVE_KEYWORD_REGEX = /password|secret|token|api_key|apikey|auth|credential|private_key/i
+
 export function runSecurityChecks(resources) {
   const issues = []
 
@@ -101,16 +103,8 @@ export function runSecurityChecks(resources) {
         }
 
         // Check 8: hardcoded secrets in environment variables
-        const sensitiveKeywords = [
-          'password', 'secret', 'token', 'api_key',
-          'apikey', 'auth', 'credential', 'private_key'
-        ]
-
         envVars.forEach((env) => {
-          const keyLower = (env.name || '').toLowerCase()
-          const isSensitive = sensitiveKeywords.some((keyword) =>
-            keyLower.includes(keyword)
-          )
+          const isSensitive = SENSITIVE_KEYWORD_REGEX.test(env.name || '')
 
           // Flag only if value is hardcoded (not from secretKeyRef or configMapKeyRef)
           if (isSensitive && env.value) {
